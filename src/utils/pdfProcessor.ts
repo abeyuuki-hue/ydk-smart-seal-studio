@@ -171,20 +171,39 @@ export const getPDFPageCount = (pdfDoc: PDFLib): number => {
   return pdfDoc.getPages().length;
 };
 
+import {
+  embedLegalSignatureIntoPdfDoc,
+  LegalSignerProfile,
+  YDKLegalSignatureProofPackage,
+} from './legalSignatureEngine';
+
 /**
- * 元PDFバイナリにスタンプを合成した新しいPDFバイナリを生成（元PDFを破壊しない）
+ * 元PDFバイナリにスタンプを合成し、さらに電子署名法及び関連省令・指針に準拠した
+ * 無料の暗号証明データ（RSA-2048/ECDSA-P256 + SHA-256）を組み込んだ新しいPDFバイナリを生成
  */
-export const buildStampedPDFBytes = async (
+export const buildStampedPDFWithLegalProof = async (
   rawPdfBytes: Uint8Array,
   stamps: PDFStamp[],
-  stampCanvasGenerator: (stamp: PDFStamp) => Promise<HTMLCanvasElement>
-): Promise<Uint8Array> => {
+  stampCanvasGenerator: (stamp: PDFStamp) => Promise<HTMLCanvasElement>,
+  options?: {
+    documentFileName?: string;
+    enableLegalProof?: boolean;
+    signerProfile?: Partial<LegalSignerProfile>;
+  }
+): Promise<{
+  pdfBytes: Uint8Array;
+  proofPackage: YDKLegalSignatureProofPackage | null;
+}> => {
   const clonedDoc = await PDFLib.load(rawPdfBytes, { ignoreEncryption: true });
   const pages = clonedDoc.getPages();
+  const sealPngDataUrls: string[] = [];
 
   for (const stamp of stamps) {
     const pageIndex = stamp.pageNumber - 1;
-    if (pageIndex < 0 || pageIndex >= pages.length) continue;
+    if (pageIndex < 0 || pageIndex >= pages.length) {
+      sealPngDataUrls.push('');
+      continue;
+    }
 
     const page = pages[pageIndex];
     const { height: pageHeight } = page.getSize();
@@ -192,6 +211,7 @@ export const buildStampedPDFBytes = async (
     // 高解像度キャンバスからスタンプPNGを生成
     const canvas = await stampCanvasGenerator(stamp);
     const imageData = canvas.toDataURL('image/png');
+    sealPngDataUrls.push(imageData);
     const pngImage = await clonedDoc.embedPng(imageData);
 
     const { x, y, width, height, rotation = 0, opacity = 1 } = stamp.position;
@@ -210,7 +230,47 @@ export const buildStampedPDFBytes = async (
     });
   }
 
-  return await clonedDoc.save();
+  if (options?.enableLegalProof !== false) {
+    const { signedPdfBytes, proofPackage } = await embedLegalSignatureIntoPdfDoc({
+      pdfDoc: clonedDoc,
+      rawOriginalPdfBytes: rawPdfBytes,
+      documentFileName: options?.documentFileName || 'document.pdf',
+      stamps,
+      sealPngDataUrls,
+      profile: options?.signerProfile,
+    });
+    return {
+      pdfBytes: signedPdfBytes,
+      proofPackage,
+    };
+  }
+
+  return {
+    pdfBytes: await clonedDoc.save(),
+    proofPackage: null,
+  };
+};
+
+/**
+ * 後方互換ラッパー: 元PDFバイナリにスタンプ＋電子署名法準拠証明データを合成したPDFバイナリを返す
+ */
+export const buildStampedPDFBytes = async (
+  rawPdfBytes: Uint8Array,
+  stamps: PDFStamp[],
+  stampCanvasGenerator: (stamp: PDFStamp) => Promise<HTMLCanvasElement>,
+  options?: {
+    documentFileName?: string;
+    enableLegalProof?: boolean;
+    signerProfile?: Partial<LegalSignerProfile>;
+  }
+): Promise<Uint8Array> => {
+  const { pdfBytes } = await buildStampedPDFWithLegalProof(
+    rawPdfBytes,
+    stamps,
+    stampCanvasGenerator,
+    options
+  );
+  return pdfBytes;
 };
 
 /**

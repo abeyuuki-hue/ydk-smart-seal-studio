@@ -15,14 +15,24 @@ import {
   loadPDFFromBase64,
   createSampleDocumentPDF,
   buildStampedPDFBytes,
+  buildStampedPDFWithLegalProof,
   downloadPDFBytes,
   saveFileToGoogleDrive,
   uint8ArrayToBase64,
 } from './utils/pdfProcessor';
+import {
+  DEFAULT_LEGAL_SIGNER_PROFILE,
+  LegalSignerProfile,
+  YDKLegalSignatureProofPackage,
+  LegalVerificationResult,
+  verifyPdfLegalSignature,
+  getLocalSignatureAuditLedger,
+} from './utils/legalSignatureEngine';
 import { PDFUploader } from './components/PDFUploader';
 import { StampDesigner } from './components/StampDesigner';
 import { StampPreview } from './components/StampPreview';
 import { PDFEditor } from './components/PDFEditor';
+import { LegalProofPanel } from './components/LegalProofPanel';
 import './App.css';
 
 function App() {
@@ -36,6 +46,12 @@ function App() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [bannerMessage, setBannerMessage] = useState<string>('');
+
+  // 電子署名法準拠・無料証明データ設定＆検証ステート
+  const [enableLegalProof, setEnableLegalProof] = useState<boolean>(true);
+  const [signerProfile, setSignerProfile] = useState<LegalSignerProfile>(DEFAULT_LEGAL_SIGNER_PROFILE);
+  const [latestProof, setLatestProof] = useState<YDKLegalSignatureProofPackage | null>(null);
+  const [verificationResult, setVerificationResult] = useState<LegalVerificationResult | null>(null);
 
   const showToast = (msg: string) => {
     setBannerMessage(msg);
@@ -285,16 +301,94 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [selectedStampId]);
 
-  // 押印済みPDFをダウンロード保存
+  // 現在の押印構成で電子署名法準拠・証明データを生成し、即座に暗号検証を実行して表示
+  const handleGenerateAndInspectProof = async () => {
+    if (!rawPdfBytes) return;
+    setIsProcessing(true);
+    try {
+      const { pdfBytes, proofPackage } = await buildStampedPDFWithLegalProof(
+        rawPdfBytes,
+        placedStamps,
+        generateStampCanvas,
+        {
+          documentFileName: pdfFileName || 'document.pdf',
+          enableLegalProof: true,
+          signerProfile,
+        }
+      );
+      if (proofPackage) {
+        setLatestProof(proofPackage);
+      }
+      const verRes = await verifyPdfLegalSignature(pdfBytes);
+      setVerificationResult(verRes);
+      showToast(
+        verRes.isValid
+          ? `🛡️ 電子署名法準拠・証明データを生成し、暗号検証（本人作成・非改変）に成功しました`
+          : `⚠️ 証明データの検証結果を確認してください`
+      );
+    } catch (error) {
+      console.error('証明データ生成・検証エラー:', error);
+      alert('証明データの生成・検証に失敗しました。');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 読み込み中の元PDF自体に既に証明データが埋め込まれているかを検証（未埋め込みの場合は現在の押印構成で生成して検証）
+  const handleVerifyCurrentPdf = async () => {
+    if (!rawPdfBytes) return;
+    setIsProcessing(true);
+    try {
+      const rawCheck = await verifyPdfLegalSignature(rawPdfBytes);
+      if (rawCheck.hasEmbeddedProof) {
+        setVerificationResult(rawCheck);
+        if (rawCheck.proofPackage) {
+          setLatestProof(rawCheck.proofPackage);
+        }
+        showToast(
+          rawCheck.isValid
+            ? `✅ 読み込みPDFの電子署名・証明データを検証しました（改ざんなし）`
+            : `🚨 読み込みPDFの証明データに不整合が検出されました`
+        );
+      } else {
+        // まだ未署名のPDFの場合は、現在の押印状態で署名・検証を実行
+        await handleGenerateAndInspectProof();
+      }
+    } catch (error) {
+      console.error('PDF検証エラー:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 押印済みPDFをダウンロード保存（電子署名法準拠・無料証明データ自動組込）
   const handleDownloadStampedPDF = async () => {
     if (!rawPdfBytes) return;
     setIsProcessing(true);
     try {
-      const pdfBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas);
+      const { pdfBytes, proofPackage } = await buildStampedPDFWithLegalProof(
+        rawPdfBytes,
+        placedStamps,
+        generateStampCanvas,
+        {
+          documentFileName: pdfFileName || 'document.pdf',
+          enableLegalProof,
+          signerProfile,
+        }
+      );
+      if (proofPackage) {
+        setLatestProof(proofPackage);
+        const verRes = await verifyPdfLegalSignature(pdfBytes);
+        setVerificationResult(verRes);
+      }
       const baseName = pdfFileName.replace(/\.pdf$/i, '') || 'document';
       const outName = `${baseName}_押印済.pdf`;
       downloadPDFBytes(pdfBytes, outName);
-      showToast(`📥 押印済みPDF「${outName}」をダウンロードしました`);
+      showToast(
+        enableLegalProof
+          ? `📥 電子署名法準拠・証明データ付PDF「${outName}」をダウンロードしました`
+          : `📥 押印済みPDF「${outName}」をダウンロードしました`
+      );
     } catch (error) {
       console.error('PDF出力エラー:', error);
       alert('PDF出力に失敗しました。');
@@ -303,16 +397,30 @@ function App() {
     }
   };
 
-  // 押印済みPDFをGoogleドライブへ直接保存
+  // 押印済みPDFをGoogleドライブへ直接保存（電子署名法準拠・無料証明データ自動組込）
   const handleSaveStampedPDFToDrive = async () => {
     if (!rawPdfBytes) return;
     setIsProcessing(true);
     try {
-      const pdfBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas);
+      const { pdfBytes, proofPackage } = await buildStampedPDFWithLegalProof(
+        rawPdfBytes,
+        placedStamps,
+        generateStampCanvas,
+        {
+          documentFileName: pdfFileName || 'document.pdf',
+          enableLegalProof,
+          signerProfile,
+        }
+      );
+      if (proofPackage) {
+        setLatestProof(proofPackage);
+        const verRes = await verifyPdfLegalSignature(pdfBytes);
+        setVerificationResult(verRes);
+      }
       const baseName = pdfFileName.replace(/\.pdf$/i, '') || 'document';
       const outName = `${baseName}_押印済.pdf`;
       const res = await saveFileToGoogleDrive(pdfBytes, outName, 'application/pdf');
-      showToast(`☁️ ${res.message}`);
+      showToast(`☁️ ${res.message} (電子署名法準拠・証明データ組込済)`);
     } catch (error: any) {
       console.error('Googleドライブ保存エラー:', error);
       alert(`Googleドライブへの保存に失敗しました: ${error?.message || error}`);
@@ -324,7 +432,7 @@ function App() {
   // AI Agent (chrome-devtools-mcp / agent-browser / CLI) 向けプログラマティック操作APIを公開
   useEffect(() => {
     (window as any).YDKSealAgentAPI = {
-      version: '2.2.0',
+      version: '2.3.0',
       listPresets: () =>
         presetStamps.map((p) => ({
           id: p.id,
@@ -427,26 +535,83 @@ function App() {
         return { ok: true };
       },
       getPlacedStamps: () => JSON.parse(JSON.stringify(placedStamps)),
+      getLegalSignerProfile: () => JSON.parse(JSON.stringify(signerProfile)),
+      updateLegalSignerProfile: (partial: Partial<LegalSignerProfile>) => {
+        const next: LegalSignerProfile = { ...signerProfile, ...partial };
+        setSignerProfile(next);
+        return { ok: true, profile: next };
+      },
+      generateAndVerifyLegalProof: async () => {
+        if (!rawPdfBytes) throw new Error('No PDF loaded');
+        const { pdfBytes, proofPackage } = await buildStampedPDFWithLegalProof(
+          rawPdfBytes,
+          placedStamps,
+          generateStampCanvas,
+          {
+            documentFileName: pdfFileName || 'document.pdf',
+            enableLegalProof: true,
+            signerProfile,
+          }
+        );
+        if (proofPackage) setLatestProof(proofPackage);
+        const verification = await verifyPdfLegalSignature(pdfBytes);
+        setVerificationResult(verification);
+        return {
+          ok: verification.isValid,
+          verification,
+          proofPackage,
+        };
+      },
+      verifyPdfBase64: async (base64Data: string) => {
+        const { rawBytes } = await loadPDFFromBase64(base64Data);
+        return await verifyPdfLegalSignature(rawBytes);
+      },
+      getAuditLedger: () => getLocalSignatureAuditLedger(),
       exportStampedPdfBase64: async () => {
         if (!rawPdfBytes) throw new Error('No PDF loaded');
-        const outBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas);
+        const { pdfBytes: outBytes, proofPackage } = await buildStampedPDFWithLegalProof(
+          rawPdfBytes,
+          placedStamps,
+          generateStampCanvas,
+          {
+            documentFileName: pdfFileName || 'document.pdf',
+            enableLegalProof,
+            signerProfile,
+          }
+        );
+        if (proofPackage) setLatestProof(proofPackage);
         const baseName = pdfFileName.replace(/\.pdf$/i, '') || 'document';
         return {
           ok: true,
           fileName: `${baseName}_押印済.pdf`,
           stampCount: placedStamps.length,
+          legalProofId: proofPackage?.signedAttributes?.proofId || null,
+          algorithmOid: proofPackage?.certificate?.algorithm?.signatureOid || null,
           base64: uint8ArrayToBase64(outBytes),
         };
       },
       saveToGoogleDrive: async (customFileName?: string) => {
         if (!rawPdfBytes) throw new Error('No PDF loaded');
-        const outBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas);
+        const outBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas, {
+          documentFileName: pdfFileName || 'document.pdf',
+          enableLegalProof,
+          signerProfile,
+        });
         const baseName = pdfFileName.replace(/\.pdf$/i, '') || 'document';
         const outName = customFileName || `${baseName}_押印済.pdf`;
         return await saveFileToGoogleDrive(outBytes, outName, 'application/pdf');
       },
     };
-  }, [currentStamp, placedStamps, rawPdfBytes, pdfFileName, currentPage, handleStampChange]);
+  }, [
+    currentStamp,
+    placedStamps,
+    rawPdfBytes,
+    pdfFileName,
+    currentPage,
+    handleStampChange,
+    enableLegalProof,
+    signerProfile,
+  ]);
 
   const selectedPlaced = placedStamps.find((s) => s.id === selectedStampId) || null;
 
@@ -458,7 +623,7 @@ function App() {
           <div>
             <h1>YDK スマート電子印鑑スタジオ</h1>
             <p className="subtitle">
-              YDK Smart Seal Studio v1.0 — 透過印鑑パネル＆PDFページプレビュー完全同期・Googleドライブ直結
+              YDK Smart Seal Studio v2.3 — 電子署名法＆認定指針準拠・無料証明データ自動組込・Googleドライブ直結
             </p>
           </div>
         </div>
@@ -479,7 +644,7 @@ function App() {
                 onClick={handleDownloadStampedPDF}
                 disabled={isProcessing || placedStamps.length === 0}
               >
-                📥 押印済みPDFダウンロード ({placedStamps.length}箇所)
+                📥 証明データ付PDFダウンロード ({placedStamps.length}箇所)
               </button>
               <button
                 type="button"
@@ -532,13 +697,25 @@ function App() {
           )}
         </main>
 
-        {/* 右カラム: 印鑑パネル（透過プレビュー） ＆ 配置済み印鑑微調整リスト */}
+        {/* 右カラム: 印鑑パネル（透過プレビュー） ＆ 電子署名法準拠証明データパネル ＆ 配置済み印鑑微調整リスト */}
         <aside className="right-sidebar">
           <StampPreview
             stamp={currentStamp}
             onQuickStampToPage={handleQuickStampToPage}
             syncSelectedStamp={syncSelectedStamp}
             onToggleSyncSelectedStamp={setSyncSelectedStamp}
+          />
+
+          <LegalProofPanel
+            enableLegalProof={enableLegalProof}
+            onToggleEnableLegalProof={setEnableLegalProof}
+            signerProfile={signerProfile}
+            onChangeSignerProfile={setSignerProfile}
+            latestProof={latestProof}
+            verificationResult={verificationResult}
+            onVerifyCurrentPdf={handleVerifyCurrentPdf}
+            onGenerateAndInspectProof={handleGenerateAndInspectProof}
+            isProcessing={isProcessing}
           />
 
           <div className="placed-stamps-panel">
