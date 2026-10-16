@@ -119,6 +119,55 @@ export const presetStamps: StampConfig[] = [
     stretchText: true,
     localRotateDegree: 0,
   },
+  // 4b. やればできるこJAPAN株式会社 角印 (21mm)
+  {
+    id: 'preset-ydk-japan-kakuin',
+    name: 'やればできるこJAPAN 会社角印（21mm）',
+    type: 'business',
+    xmlClass: 'BusinessStamp',
+    text: 'やればで\nきるこ\nJAPAN\n株式会社印',
+    fontName: 'Ｃ＆Ｇ P半古印',
+    fontBold: true,
+    color: 'ffd80016',
+    thickness: 4,
+    blur: 60,
+    pasteEdge: 21,
+    outlined: false,
+    clear1: true,
+    kasumiLevel: 28,
+    clipFrame: true,
+    fontRatio: 100,
+    direction: 1,
+    frameFigure: 0,
+    stretchText: true,
+    localRotateDegree: 0,
+  },
+  // 4c. やればできるこJAPAN株式会社 代表者丸印 (18mm)
+  {
+    id: 'preset-ydk-japan-president',
+    name: 'やればできるこJAPAN 代表者印（18mm）',
+    type: 'president',
+    xmlClass: 'PresidentStamp',
+    text: 'やればできるこJAPAN株式会社代表者印',
+    centerText: '代表取\n締役印',
+    fontName: 'Ｃ＆Ｇ半漢印',
+    fontBold: true,
+    color: 'ffd80016',
+    thickness: 5,
+    blur: 100,
+    pasteEdge: 18,
+    outlined: false,
+    clear1: true,
+    kasumiLevel: 30,
+    clipFrame: true,
+    fontRatio: 118,
+    centerRatio: 100,
+    outsideAdjustment: 0,
+    localClear1: true,
+    centerDirection: 0,
+    visibleStartPoint: true,
+    localRotateDegree: 0,
+  },
   // 5. abnyydeu.l1u (阿部 認印 9.5mm)
   {
     id: 'preset-abe-mitome',
@@ -281,11 +330,11 @@ export const presetStamps: StampConfig[] = [
 ];
 
 export const stampTemplates: Record<StampType, StampConfig> = {
-  president: presetStamps[0],
-  business: presetStamps[1],
-  mitome: presetStamps[4],
-  datename: presetStamps[6],
-  user: presetStamps[2],
+  president: presetStamps.find((p) => p.id === 'preset-ydk-president') || presetStamps[0],
+  business: presetStamps.find((p) => p.id === 'preset-ydk-kakuin-4line') || presetStamps[1],
+  mitome: presetStamps.find((p) => p.id === 'preset-abe-mitome') || presetStamps[0],
+  datename: presetStamps.find((p) => p.id === 'preset-ydk-datename') || presetStamps[0],
+  user: presetStamps.find((p) => p.id === 'preset-ydk-official-scan') || presetStamps[0],
 };
 
 export const getStampTemplate = (type: StampType): StampConfig => {

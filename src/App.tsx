@@ -17,6 +17,7 @@ import {
   buildStampedPDFBytes,
   downloadPDFBytes,
   saveFileToGoogleDrive,
+  uint8ArrayToBase64,
 } from './utils/pdfProcessor';
 import { PDFUploader } from './components/PDFUploader';
 import { StampDesigner } from './components/StampDesigner';
@@ -319,6 +320,133 @@ function App() {
       setIsProcessing(false);
     }
   };
+
+  // AI Agent (chrome-devtools-mcp / agent-browser / CLI) 向けプログラマティック操作APIを公開
+  useEffect(() => {
+    (window as any).YDKSealAgentAPI = {
+      version: '2.2.0',
+      listPresets: () =>
+        presetStamps.map((p) => ({
+          id: p.id,
+          name: p.name,
+          type: p.type,
+          text: p.text,
+          pasteEdgeMm: p.pasteEdge,
+        })),
+      getCurrentStamp: () => JSON.parse(JSON.stringify(currentStamp)),
+      selectPreset: (idOrQuery: string) => {
+        const q = (idOrQuery || '').toLowerCase();
+        const found =
+          presetStamps.find((p) => p.id.toLowerCase() === q) ||
+          presetStamps.find(
+            (p) =>
+              (p.name || '').toLowerCase().includes(q) ||
+              (p.text || '').toLowerCase().includes(q) ||
+              p.id.toLowerCase().includes(q)
+          );
+        if (!found) return { ok: false, error: `Preset not found: ${idOrQuery}` };
+        const cloned = JSON.parse(JSON.stringify(found));
+        handleStampChange(cloned);
+        return { ok: true, preset: cloned };
+      },
+      updateStampConfig: (partial: Partial<StampConfig>) => {
+        const next: StampConfig = { ...currentStamp, ...partial };
+        handleStampChange(next);
+        return { ok: true, config: next };
+      },
+      renderStampPngDataUrl: async (presetIdOrConfig?: string | Partial<StampConfig>) => {
+        let cfg: StampConfig = JSON.parse(JSON.stringify(currentStamp));
+        if (typeof presetIdOrConfig === 'string') {
+          const found = presetStamps.find(
+            (p) => p.id === presetIdOrConfig || (p.name || '').includes(presetIdOrConfig)
+          );
+          if (found) cfg = JSON.parse(JSON.stringify(found));
+        } else if (presetIdOrConfig && typeof presetIdOrConfig === 'object') {
+          cfg = { ...cfg, ...presetIdOrConfig };
+        }
+        const sizePt = mmToPt(cfg.pasteEdge || 18);
+        const canvas = await generateStampCanvas({
+          id: 'agent-render',
+          pageNumber: 1,
+          config: cfg,
+          position: { x: 0, y: 0, width: sizePt, height: sizePt, rotation: 0, opacity: 1 },
+        });
+        return canvas.toDataURL('image/png');
+      },
+      loadPdfBase64: async (base64Data: string, fileName: string = 'agent_input.pdf') => {
+        await handleDrivePDFSelect(fileName, base64Data);
+        return { ok: true, fileName };
+      },
+      placeStamp: (opts?: {
+        presetId?: string;
+        config?: Partial<StampConfig>;
+        pageNumber?: number;
+        x?: number;
+        y?: number;
+        xMm?: number;
+        yMm?: number;
+        sizeMm?: number;
+        rotation?: number;
+        opacity?: number;
+      }) => {
+        let cfg: StampConfig = JSON.parse(JSON.stringify(currentStamp));
+        if (opts?.presetId) {
+          const found = presetStamps.find(
+            (p) => p.id === opts.presetId || (p.name || '').includes(opts.presetId!)
+          );
+          if (found) cfg = JSON.parse(JSON.stringify(found));
+        }
+        if (opts?.config) {
+          cfg = { ...cfg, ...opts.config };
+        }
+        const edgeMm = opts?.sizeMm ?? cfg.pasteEdge ?? 18;
+        cfg.pasteEdge = edgeMm;
+        const sizePt = mmToPt(edgeMm);
+        const xPt = opts?.xMm !== undefined ? mmToPt(opts.xMm) : (opts?.x ?? 348);
+        const yPt = opts?.yMm !== undefined ? mmToPt(opts.yMm) : (opts?.y ?? 172);
+        const newStamp: PDFStamp = {
+          id: `agent-placed-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          pageNumber: opts?.pageNumber ?? currentPage,
+          config: cfg,
+          position: {
+            x: Math.round(xPt * 10) / 10,
+            y: Math.round(yPt * 10) / 10,
+            width: sizePt,
+            height: sizePt,
+            rotation: opts?.rotation ?? 0,
+            opacity: opts?.opacity ?? 0.92,
+          },
+        };
+        setPlacedStamps((prev) => [...prev, newStamp]);
+        setSelectedStampId(newStamp.id);
+        return { ok: true, stamp: newStamp };
+      },
+      clearStamps: () => {
+        setPlacedStamps([]);
+        setSelectedStampId(null);
+        return { ok: true };
+      },
+      getPlacedStamps: () => JSON.parse(JSON.stringify(placedStamps)),
+      exportStampedPdfBase64: async () => {
+        if (!rawPdfBytes) throw new Error('No PDF loaded');
+        const outBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas);
+        const baseName = pdfFileName.replace(/\.pdf$/i, '') || 'document';
+        return {
+          ok: true,
+          fileName: `${baseName}_押印済.pdf`,
+          stampCount: placedStamps.length,
+          base64: uint8ArrayToBase64(outBytes),
+        };
+      },
+      saveToGoogleDrive: async (customFileName?: string) => {
+        if (!rawPdfBytes) throw new Error('No PDF loaded');
+        const outBytes = await buildStampedPDFBytes(rawPdfBytes, placedStamps, generateStampCanvas);
+        const baseName = pdfFileName.replace(/\.pdf$/i, '') || 'document';
+        const outName = customFileName || `${baseName}_押印済.pdf`;
+        return await saveFileToGoogleDrive(outBytes, outName, 'application/pdf');
+      },
+    };
+  }, [currentStamp, placedStamps, rawPdfBytes, pdfFileName, currentPage, handleStampChange]);
 
   const selectedPlaced = placedStamps.find((s) => s.id === selectedStampId) || null;
 
