@@ -1,0 +1,221 @@
+/**
+ * ページのプレビュー ＆ インタラクティブ押印エディタ CSS
+ */
+
+.pdf-editor {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.85rem;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.page-controls,
+.zoom-controls,
+.mode-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.page-controls button,
+.zoom-controls button {
+  padding: 0.35rem 0.65rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.page-controls button:hover:not(:disabled),
+.zoom-controls button:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.page-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.page-indicator,
+.zoom-indicator {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  min-width: 64px;
+  text-align: center;
+}
+
+.btn-toolbar-stamp-now {
+  padding: 0.38rem 0.75rem;
+  background: #e11d48;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(225, 29, 72, 0.3);
+}
+
+.btn-toolbar-stamp-now:hover {
+  background: #be123c;
+}
+
+.stamp-mode-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+}
+
+.stamp-mode-badge.active {
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #be123c;
+}
+
+.stamp-mode-badge input {
+  accent-color: #e11d48;
+}
+
+.editor-hint-bar {
+  font-size: 0.76rem;
+  color: #475569;
+  background: #f8fafc;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #e11d48;
+}
+
+.pdf-canvas-viewport {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: auto;
+  max-height: calc(100vh - 230px);
+  min-height: 520px;
+  background: #cbd5e1;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.pdf-page-wrapper {
+  position: relative;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.25);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.pdf-page-wrapper.cursor-stamp {
+  cursor: crosshair;
+}
+
+.pdf-canvas {
+  display: block;
+}
+
+/* 配置済みスタンプオーバーレイ（PDFページ上の絶対座標配置） */
+.placed-stamp-box {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.placed-stamp-box:hover {
+  border: 2px dashed rgba(225, 29, 72, 0.65);
+}
+
+.placed-stamp-box.selected {
+  border: 2px dashed #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18);
+}
+
+.placed-stamp-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.placed-stamp-size-label {
+  position: absolute;
+  top: -22px;
+  left: 0;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.stamp-delete-btn {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.stamp-delete-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.stamp-resize-handle {
+  position: absolute;
+  bottom: -7px;
+  right: -7px;
+  width: 14px;
+  height: 14px;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}

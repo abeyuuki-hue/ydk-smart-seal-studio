@@ -1,0 +1,342 @@
+/**
+ * 印鑑デザイナー＆プリセット設定パネル CSS
+ */
+
+.stamp-designer {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.95rem;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.designer-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.designer-header-row h2 {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.import-buttons {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.btn-outline-sm {
+  padding: 0.28rem 0.55rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.btn-outline-sm:hover {
+  background: #e2e8f0;
+}
+
+/* デザイナー内ミニ透過プレビューモニター */
+.designer-live-monitor {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+}
+
+.mini-canvas-box {
+  width: 76px;
+  height: 76px;
+  border-radius: 8px;
+  border: 1px solid #fda4af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.mini-preview-canvas {
+  width: 70px;
+  height: 70px;
+  display: block;
+}
+
+.mini-monitor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.mini-monitor-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #881337;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-monitor-meta {
+  font-size: 0.72rem;
+  color: #9f1239;
+}
+
+.btn-mini-stamp-now {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0.3rem 0.65rem;
+  background: #e11d48;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-mini-stamp-now:hover {
+  background: #be123c;
+}
+
+/* プリセット一覧 */
+.preset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.25rem;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.preset-chip {
+  padding: 0.38rem 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-chip:hover {
+  background: #fff1f2;
+  border-color: #fda4af;
+}
+
+.preset-chip.active {
+  background: #e11d48;
+  color: #ffffff;
+  border-color: #be123c;
+  font-weight: 700;
+}
+
+/* 5大印種タブ */
+.stamp-type-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+}
+
+.tab-btn {
+  padding: 0.4rem 0.2rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  text-align: center;
+}
+
+.tab-btn.active {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+}
+
+.designer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.designer-section.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.designer-section.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-clear-img,
+.btn-today-mini {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.text-input,
+.text-area-input,
+.select-input {
+  width: 100%;
+  padding: 0.42rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.text-input:focus,
+.text-area-input:focus,
+.select-input:focus {
+  outline: none;
+  border-color: #e11d48;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.15);
+}
+
+.checkbox-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.checkbox-inline input {
+  accent-color: #e11d48;
+}
+
+/* カラー選択 */
+.color-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.color-swatch-btn {
+  padding: 0.32rem 0.55rem;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.color-swatch-btn.active {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+.color-picker-native {
+  width: 32px;
+  height: 28px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 1px;
+  cursor: pointer;
+}
+
+.slider {
+  width: 100%;
+  accent-color: #e11d48;
+  cursor: pointer;
+}
+
+.quick-size-pills {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+
+.pill-btn {
+  padding: 2px 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+}
+
+.pill-btn.active {
+  background: #e11d48;
+  color: #ffffff;
+  border-color: #be123c;
+}
+
+.kasumi-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.6rem;
+}
+
+.kasumi-checks {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}

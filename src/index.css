@@ -1,0 +1,30 @@
+:root {
+  --primary-color: #dc2626;
+  --secondary-color: #64748b;
+  --danger-color: #ef4444;
+  --success-color: #16a34a;
+  --border-color: #e2e8f0;
+  --bg-color: #f1f5f9;
+  --text-color: #0f172a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Meiryo', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}

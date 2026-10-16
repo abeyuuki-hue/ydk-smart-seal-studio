@@ -1,0 +1,385 @@
+/**
+ * YDK スマート電子印鑑スタジオ (YDK Smart Seal Studio) - 全体3カラムレイアウトCSS
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans',
+    'Yu Gothic UI', sans-serif;
+  background-color: #f1f5f9;
+  color: #1e293b;
+  overflow-x: hidden;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #b91c1c 100%);
+  color: #ffffff;
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.22);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-seal-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #d80016;
+  border: 2px solid #fca5a5;
+  color: #ffffff;
+  font-family: 'Zen Antique Soft', 'Yuji Syuku', serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(216, 0, 22, 0.45);
+  flex-shrink: 0;
+}
+
+.app-header h1 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.app-header .subtitle {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.header-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-header-stamp,
+.btn-header-download,
+.btn-header-drive {
+  padding: 0.48rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-header-stamp {
+  background: #ef4444;
+  color: #ffffff;
+  border: 1px solid #fca5a5;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+}
+
+.btn-header-stamp:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.btn-header-download {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn-header-download:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-header-drive {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-header-drive:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-header-stamp:disabled,
+.btn-header-download:disabled,
+.btn-header-drive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.top-toast-banner {
+  background: #065f46;
+  color: #ecfdf5;
+  text-align: center;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* 3カラムグリッド（左: デザイナー / 中央: ページプレビュー / 右: 透過印鑑パネル＆配置リスト） */
+.app-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr) 310px;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  max-width: 1920px;
+  width: 100%;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.left-sidebar,
+.right-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: calc(100vh - 82px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* 右カラム下部：配置済み印鑑パネル */
+.placed-stamps-panel {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.9rem;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title-row h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.btn-clear-all {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-clear-all:hover {
+  background: #fecaca;
+}
+
+.selected-stamp-adjuster {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.adjuster-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #be123c;
+}
+
+.adjuster-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  flex-wrap: wrap;
+}
+
+.adjuster-row input[type='number'] {
+  width: 58px;
+  padding: 3px 5px;
+  border: 1px solid #fda4af;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.adjuster-row input[type='range'] {
+  flex: 1;
+  accent-color: #e11d48;
+}
+
+.empty-hint {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.45;
+  background: #f8fafc;
+  padding: 0.65rem;
+  border-radius: 6px;
+  border: 1px dashed #cbd5e1;
+}
+
+.stamps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.stamp-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.stamp-item:hover {
+  background: #f1f5f9;
+}
+
+.stamp-item.selected {
+  background: #fff1f2;
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.25);
+}
+
+.stamp-item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stamp-item-info small {
+  color: #64748b;
+}
+
+.remove-button {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.remove-button:hover {
+  background: #dc2626;
+}
+
+.bottom-save-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.export-button,
+.export-drive-button {
+  width: 100%;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.export-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.export-button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.export-drive-button {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.export-drive-button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.export-button:disabled,
+.export-drive-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ノートPC・小画面・Chrome拡張サイドパネル対応レスポンシブ */
+@media (max-width: 1200px) {
+  .app-container {
+    grid-template-columns: 330px minmax(0, 1fr);
+  }
+  .right-sidebar {
+    grid-column: 1 / -1;
+    max-height: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
+  .left-sidebar,
+  .right-sidebar {
+    max-height: none;
+    grid-template-columns: 1fr;
+  }
+}

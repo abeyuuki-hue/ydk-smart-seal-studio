@@ -1,0 +1,187 @@
+/**
+ * 印鑑パネル（透過プレビュー）CSS
+ */
+
+.stamp-preview {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.9rem;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.preview-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.preview-header-row h3 {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.size-badge {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* 市松模様（透過確認用チェッカーボード） */
+.checkerboard-bg {
+  background-color: #ffffff;
+  background-image: linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+    linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+    linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.preview-container {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0.5rem;
+}
+
+.preview-main-col,
+.preview-real-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.preview-caption {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.preview-canvas {
+  width: 155px;
+  height: 155px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  transition: transform 0.15s ease;
+}
+
+.preview-canvas:hover {
+  transform: scale(1.03);
+  border-color: #ef4444;
+}
+
+.real-canvas-wrap {
+  min-width: 76px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.real-size-canvas {
+  display: block;
+}
+
+.btn-quick-stamp-page {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+  transition: all 0.16s ease;
+}
+
+.btn-quick-stamp-page:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.sync-selected-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+  padding: 0.4rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.sync-selected-toggle input {
+  accent-color: #e11d48;
+}
+
+.preview-export-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.btn-export-png,
+.btn-export-drive,
+.btn-export-xml {
+  padding: 0.42rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1e293b;
+  transition: all 0.15s;
+}
+
+.btn-export-drive {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.btn-export-xml {
+  grid-column: 1 / -1;
+}
+
+.btn-export-png:hover,
+.btn-export-drive:hover,
+.btn-export-xml:hover {
+  background: #e2e8f0;
+}
+
+.preview-status-toast {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}

@@ -1,0 +1,29 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist-ssr
+*.local
+
+# OS / Cloud Sync metadata files (must never be committed or packed into Chrome Extension)
+desktop.ini
+Desktop.ini
+Thumbs.db
+.DS_Store
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.vercel
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
